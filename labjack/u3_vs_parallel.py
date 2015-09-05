@@ -2,6 +2,11 @@
 """
 Test trigger latency of LabJack U3-LV (USB) vs. parallel port
 This will only work on a suitably ancient Win-machine (XP, 32-bit)
+The documentation for the LabJackPython module is really hard to
+understand, and the only way to really understand what's going on
+is to read the code:
+
+https://github.com/labjack/LabJackPython/blob/master/src/u3.py
 """
 from psychopy import core, logging, gui, event, visual
 
@@ -12,7 +17,7 @@ parallel.setPortAddress(0x378)#address for parallel port on many machines
 # Figure out whether to flip pins or fake it
 try: parallel.setData(1)
 except RuntimeError:
-    def setParallelData(code=1): 
+    def setParallelData(code=1):
         if code > 0: logging.exp('TRIG %d (Fake)' % code)
         pass
 else:
@@ -22,7 +27,7 @@ else:
 def trigger_parallel(code=1,trigDuration=0.010):
     """
     Here the wait is based on time.sleep(), in which
-    "the substantive part of the sleep operation is wrapped in a Py_BEGIN_ALLOW_THREADS and 
+    "the substantive part of the sleep operation is wrapped in a Py_BEGIN_ALLOW_THREADS and
     Py_END_ALLOW_THREADS block, allowing other threads to continue to execute while the current one sleeps"
     [http://stackoverflow.com/questions/92928/time-sleep-sleeps-thread-or-process]
     This leads to variability of the trigger durations if used in threaded mode,
@@ -30,14 +35,23 @@ def trigger_parallel(code=1,trigDuration=0.010):
     """
     setParallelData(code)
 #    core.wait(trigDuration,trigDuration/2.) # equivalent to time.sleep(0.005) plus a tight while-loop for another 0.005 secs!
-#    core.wait(trigDuration) # equivalent to time.sleep(0.010) 
-#    setParallelData(0)
+    core.wait(trigDuration) # equivalent to time.sleep(0.010)
+    setParallelData(0)
 
 u3dev = u3.U3()
+# CHECK: u3dev.readDefaultsConfig()
+# to see whether the EIO channels are by default OUTputs
+# To change, maybe u3dev.exportConfig() to file, then
+# u3dev.loadConfig() to apply?
+# Perhaps initial state can also be saved to chip:
 u3dev.getFeedback(u3.PortStateWrite([0x00, 0x00, 0x00]))
 
 def trigger_u3(code=1, trigDuration=0.010):
-    u3dev.getFeedback(u3.PortStateWrite([0x00, code, 0x00]))
+    trigUpCmd = u3.PortStateWrite([0x00, code, 0x00])
+    trigDurCmd = u3.WaitShort(int(Time=trigDuration/128.e-6))
+    trigDownCmd = u3.PortStateWrite([0x00, 0x00, 0x00])
+
+    u3dev.getFeedback([trigUpCmd, trigDurCmd, trigDownCmd])
 #    core.wait(trigDuration,trigDuration/2.) # equivalent to time.sleep(0.005) plus a tight while-loop for another 0.005 secs!
 #    core.wait(trigDuration)
 #    u3dev.getFeedback(u3.PortStateWrite([0x00, 0x00, 0x00]))
@@ -57,13 +71,13 @@ radialPhaseAdvanceBaseline = stimBaseSpeed/frameRate
 
 win = visual.Window(monitor=monitor, units ='deg', fullscr=False, color=bckColour)
 rad_stim = visual.RadialStim(win, size = stimSize, units = "deg", tex='sinXsin',
-                             radialCycles=stimCycles, angularCycles=angCycles, 
+                             radialCycles=stimCycles, angularCycles=angCycles,
                              mask='radRamp', autoLog=False)
 
-frameSyncSpot = visual.GratingStim(win,tex=None, mask="gauss", 
-                                   size=(1.,1.),color='white', 
+frameSyncSpot = visual.GratingStim(win,tex=None, mask="gauss",
+                                   size=(1.,1.),color='white',
                                    units='deg', pos=(0,0), autoLog=False)
-                         
+
 #####################
 
 
@@ -76,19 +90,20 @@ while bContinue:
 
     trigger_parallel(code=curCode)
     trigger_u3(code=curCode<<4)
-    
+
     for _ in xrange(int(frameRate//10)):
         frameSyncSpot.draw()
         win.flip()  # appear
 
-    trigger_parallel(code=0)
-    trigger_u3(code=0)
-    
+    # new version of trigger_u3 does timing in the hardware!
+    # trigger_parallel(code=0)
+    # trigger_u3(code=0)
+
     for _ in xrange(int(frameRate//10)):
         win.flip()  # disappear
 
-    if event.getKeys(keyList=['escape','q','space']): # flush it! 
+    if event.getKeys(keyList=['escape','q','space']): # flush it!
         bContinue = False
-       
+
 u3dev.close()
 core.quit()
