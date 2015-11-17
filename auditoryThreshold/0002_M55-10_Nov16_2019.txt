@@ -1,0 +1,6 @@
+Reversal intensities
+RevIntLeft_above: 0.0 -68.0 -62.0 -73.0 
+RevIntLeft_below: -36.0 -40.0 -38.0 -61.0 
+RevIntRight_above: -46.0 -42.0 -66.0 -65.0 
+RevIntRight_below: -44.0 -60.0 -54.0 -55.0 
+Thresholds:-58.5 -60.0 

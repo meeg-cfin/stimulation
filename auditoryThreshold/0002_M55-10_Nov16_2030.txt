@@ -1,0 +1,6 @@
+Reversal intensities
+RevIntLeft_above: 
+RevIntLeft_below: 
+RevIntRight_above: 
+RevIntRight_below: 
+Thresholds:nan nan 
