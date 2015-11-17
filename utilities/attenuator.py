@@ -27,10 +27,10 @@ class AttenuatorController():
         self.setVolume(startVal[0], 'left')
         self.setVolume(startVal[1], 'right')
 
-        self._relativeVolLeft = self.curVolLeft
-        self._relativeVolRight = self.curVolRight
-        self._relativeVolMaxLeft = self.volMax - self.volMin
-        self._relativeVolMaxRight = self.volMax - self.volMin
+        self._relativeVolLeft = 0.
+        self._relativeVolRight = 0.
+        self._relativeVolMaxLeft = -self.curVolLeft
+        self._relativeVolMaxRight = -self.curVolRight
         self._relativeVolMinLeft = 0.0
         self._relativeVolMinRight = 0.0
 
@@ -68,11 +68,11 @@ class AttenuatorController():
 
     def getCurVolumeRelative(self, side='left'):
         if side == 'left':
-            return self.relativeVolLeft
+            return self._relativeVolLeft
         elif side == 'right':
-            return self.relativeVolRight
+            return self._relativeVolRight
         elif side == 'both':
-            return self.relativeVolLeft, self.relativeVolRight
+            return self._relativeVolLeft, self._relativeVolRight
 
     def getChangeInfo(self, volDiff, side):
         nIters = int(volDiff / 0.5)

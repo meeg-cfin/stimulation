@@ -10,7 +10,7 @@ import numpy as np
 sys.path.insert(0, '../')
 import utilities
 
-targetKeys = dict(left=['1', '2', 'left'], right=['3', '4', 'right'],
+targetKeys = dict(left=['1', '2', 'z'], right=['3', '4', 'm'],
                   abort=['q', 'escape'])
 
 audioSamplingRate = 44100
@@ -22,7 +22,7 @@ nReversalAverage = 2
 
 curMonitor = 'testMonitor'
 bckColour = '#303030'
-fullScr = False
+fullScr = True
 
 try:  # try to get a previous parameters file
     expInfo = fromFile('lastParams.pickle')
@@ -99,24 +99,24 @@ message2.setText('Then press left button for left sound, '
 staircaseLeft = \
     data.StairHandler(startVal=expInfo['startIntAbv'],
                       stepType='lin',
-                      stepSizes=[8., 4., 2., 1.],
+                      stepSizes=[8., 4., 2., 2.],
                       minVal=-105., maxVal=0.0,
                       nUp=3, nDown=1,  # will home in on the 80% threshold
                       nTrials=5)
 staircaseRight = \
     data.StairHandler(startVal=expInfo['startIntAbv'],
-                      stepType='lin', stepSizes=[8., 4., 2., 1.],
+                      stepType='lin', stepSizes=[8., 4., 2., 2.],
                       minVal=-105., maxVal=0.0, nUp=3, nDown=1, nTrials=5)
 
 # with nUp=3, nDown=1, we are optimising for approaching the limit from ABOVE!
 staircaseLeft_below = \
     data.StairHandler(startVal=expInfo['startIntBlw'],
-                      stepType='lin', stepSizes=[8., 4., 2., 1.],
+                      stepType='lin', stepSizes=[8., 4., 2., 2.],
                       minVal=-105., maxVal=0.0, nUp=1, nDown=3, nTrials=5)
 
 staircaseRight_below = \
     data.StairHandler(startVal=expInfo['startIntBlw'],
-                      stepType='lin', stepSizes=[8., 4., 2., 1.],
+                      stepType='lin', stepSizes=[8., 4., 2., 2.],
                       minVal=-105., maxVal=0.0, nUp=1, nDown=3, nTrials=5)
 
 # display instructions and wait
@@ -169,7 +169,7 @@ while runStaircases:
         # max wait 0.75-1.25 secs!
         trialClock.reset(minISI + (maxISI - minISI)*np.random.random())
         allKeys = event.waitKeys(maxWait=1.)
-        if not allKeys:  # no response given in 1 secs
+        if not allKeys or len(allKeys) < 1:  # no response given in 1 secs
             thisResp = 0
         else:
             for thisKey in allKeys[0]:
@@ -233,7 +233,7 @@ attenuatorCtrl.setVolume(avgThreshRight_rounded, side='right')
 
 # make a text file to save data
 fileName = expInfo['subjID'] + '-' + str(expInfo['sesNo']) + '_' + dateStr
-dataFile = open(fileName+'.txt', 'w')
+dataFile = open(fileName+'.log', 'w')
 # dataFile.write('targetSide	oriIncrement	correct\n')
 dataFile.write('Reversal intensities')
 dataFile.write('\nRevIntLeft_above: ')
