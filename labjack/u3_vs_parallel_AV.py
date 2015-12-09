@@ -41,6 +41,11 @@ else:
     def setU3Data(code=0):
         u3dev.getFeedback(u3.PortStateWrite([0x00, code, 0x00]))
     setU3Data(0)
+    def trigger_U3(code=1, duration=0.010):
+        cmd_list = [u3.PortStateWrite([0x00, code, 0x00]),
+                   u3.WaitShort(Time=int(duration/128.e-6)),
+                   u3.PortStateWrite([0x00, 0, 0x00])]
+        u3dev.getFeedback(*cmd_list)
     
 # Not needed:
 #    core.wait(trigDuration,trigDuration/2.) # equivalent to time.sleep(0.005) plus a tight while-loop for another 0.005 secs!
