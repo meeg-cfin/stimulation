@@ -32,6 +32,7 @@ try:
     u3dev = u3.U3()
 except Exception as e:  # NullHandleException not known to Flake8
     print(e)
+    print('U3 not connected, faking it.')
     def setU3Data(code=0):
         if code > 0:
             print('{:.7f} sec, U3 TRIG {:d} (Fake)'.
