@@ -2,7 +2,6 @@ from mne import find_events, pick_channels, pick_events, Epochs
 from mne.io import Raw
 
 import numpy as np
-from os.path import join as opj
 from stormdb.access import Query
 
 
@@ -38,10 +37,25 @@ def _find_analogue_trigger_limit_sd(raw, events, anapick, tmin=-0.2, tmax=0.2):
            np.sqrt(epochs.events.shape[0]))
 
 
-def extract_delays(series, stim_chan='STI101', misc_chan='MISC001',
-                   trig_codes=None, plot_figures=True):
+def extract_delays(raw_fname, stim_chan='STI101', misc_chan='MISC001',
+                   trig_codes=None, plot_figures=True, crop_plot_time=None):
+    """Estimate onset delay of analogue (misc) input relative to trigger
 
-    raw_fname = opj(series['path'], series['files'][0])
+    Parameters
+    ==========
+    raw_fname : str
+        Raw file name
+    stim_chan : str
+        Default stim channel is 'STI101'
+    misc_chan : str
+        Default misc channel is 'MISC001' (default, usually visual)
+    trig_codes : int | list of int
+        Trigger values to compare analogue signal to
+    plot_figures : bool
+        Plot histogram and "ERP image" of delays (default: True)
+    crop_plot_time : tuple, optional
+        A 2-tuple with (tmin, tmax) being the limits to plot in the figure
+    """
     raw = Raw(raw_fname, preload=True)
 
     if trig_codes is not None:
@@ -54,9 +68,6 @@ def extract_delays(series, stim_chan='STI101', misc_chan='MISC001',
 
     ana_data = np.sqrt(raw._data[pick, :].squeeze()**2)  # rectify!
     offlevel, onlimit = _find_analogue_trigger_limit_sd(raw, events, pick)
-
-    print('Analogue data trigger limits: %.2g -> %.2g '
-          '(rectified)' % (offlevel, onlimit))
 
     for row, unpack_me in enumerate(events):
         ind, before, after = unpack_me
@@ -75,15 +86,20 @@ def extract_delays(series, stim_chan='STI101', misc_chan='MISC001',
         axs.set_title('Delay histogram (ms)')
 
         imgfig, _ = plt.subplots(1, 2)
-        Epochs(raw, events).plot_image(pick, fig=imgfig)
+        epochs = Epochs(raw, events, preload=True)
+        if crop_plot_time is not None:
+            epochs.crop(*crop_plot_time)
+        epochs.plot_image(pick, fig=imgfig)
         # mnefig[0].get_axes()[1].set_title('')
 
-    stats = dict(mean=None, median=None, q10=None, q90=None)
+    stats = dict()
     stats['mean'] = np.mean(delays)
     stats['std'] = np.std(delays)
     stats['median'] = np.median(delays)
     stats['q10'] = np.percentile(delays, 10.)
     stats['q90'] = np.percentile(delays, 90.)
+    stats['max_amp'] = np.max(epochs._data[:, pick, :])  # ovr epochs & times
+    stats['min_amp'] = np.min(epochs._data[:, pick, :])  # ovr epochs & times
     return(delays, stats)
 
 if __name__ == '__main__':
