@@ -69,17 +69,22 @@ def extract_delays(series, stim_chan='STI101', misc_chan='MISC001',
     if plot_figures:
         import matplotlib.pyplot as plt
         plt.ion()
-        curtit = 'foo'  # condition_name
         fig, axs = plt.subplots(1, 1)
 
         axs.hist(delays)
-        axs.set_title(curtit)
+        axs.set_title('Delay histogram (ms)')
 
         imgfig, _ = plt.subplots(1, 2)
-        mnefig = Epochs(raw, events).plot_image(pick, fig=imgfig)
-        mnefig[0].get_axes()[0].set_title(curtit)
+        Epochs(raw, events).plot_image(pick, fig=imgfig)
+        # mnefig[0].get_axes()[1].set_title('')
 
-    return(delays)
+    stats = dict(mean=None, median=None, q10=None, q90=None)
+    stats['mean'] = np.mean(delays)
+    stats['std'] = np.std(delays)
+    stats['median'] = np.median(delays)
+    stats['q10'] = np.percentile(delays, 10.)
+    stats['q90'] = np.percentile(delays, 90.)
+    return(delays, stats)
 
 if __name__ == '__main__':
     proj_name = 'MEG_service'
