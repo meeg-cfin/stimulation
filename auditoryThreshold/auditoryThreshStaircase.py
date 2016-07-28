@@ -27,16 +27,17 @@ fullScr = True
 try:  # try to get a previous parameters file
     expInfo = fromFile('lastParams.pickle')
 except:  # if not there then use a default set
-    expInfo = {'subjID': 'test', 'sesNo': '10',
+    expInfo = {'subjID': 'test',
                'startIntAbv': -30.0, 'startIntBlw': -100.0,
                'stimLeft (Hz)': 1000, 'stimRight (Hz)': 1000,
-               'relTargetVol': 50.}
+               'relTargetVol': 50., 'digPort': {'U3', 'LPT', 'Fake'}}
+
 dateStr = time.strftime("%b%d_%H%M", time.localtime())  # add the current time
 
 # present a dialogue to change params
 dlg = gui.DlgFromDict(expInfo, title='Auditory (dual) staircase',
-                      order=['subjID', 'sesNo', 'stimLeft (Hz)',
-                             'stimRight (Hz)'])
+                      order=['subjID', 'stimLeft (Hz)',
+                             'stimRight (Hz)', 'relTargetVol', 'digPort'])
 if dlg.OK:
     toFile('lastParams.pickle', expInfo)  # save params to file for next time
 else:
@@ -51,9 +52,10 @@ leftChanStr, rightChanStr = \
 
 if sys.platform == 'win32':
     import winsound
-    from psychopy import parallel as attenuatorPort
 
-    attenuatorCtrl = utilities.AttenuatorController(attenuatorPort)
+    if expInfo['digPort'] == 'U3':
+        dig_port = utilities.U3Port()
+    attenuatorCtrl = utilities.AttenuatorController(dig_port)
 
     def playSound(wavfile):
         winsound.PlaySound(wavfile,
