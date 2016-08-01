@@ -1,12 +1,13 @@
 from __future__ import print_function
 import numpy as np
 import time
+from labjack import u3
+from psychopy import parallel
 
 
 class U3Port():
     def __init__(self):
 
-        from labjack import u3
         self.u3dev = u3.U3()
 
     def setData(self, code=0):
@@ -16,7 +17,6 @@ class U3Port():
 class LPTPort():
     def __init__(self, port_params=None):
 
-        from psychopy import parallel
         self.lpt_port = parallel
         self.lpt_port.setPortAddress(port_params['address'])
 

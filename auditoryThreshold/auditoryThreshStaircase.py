@@ -8,7 +8,7 @@ import sys
 import numpy as np
 # This is ugly code, revise by making wavhelpers part of a module
 sys.path.insert(0, '../')
-import utilities
+from utilities import attenuator, wavhelpers
 
 targetKeys = dict(left=['1', '2', 'z'], right=['3', '4', 'm'],
                   abort=['q', 'escape'])
@@ -30,7 +30,7 @@ except:  # if not there then use a default set
     expInfo = {'subjID': 'test',
                'startIntAbv': -30.0, 'startIntBlw': -100.0,
                'stimLeft (Hz)': 1000, 'stimRight (Hz)': 1000,
-               'relTargetVol': 50., 'digPort': {'U3', 'LPT', 'Fake'}}
+               'relTargetVol': 50., 'digPort': ['U3', 'LPT', 'Fake']}
 
 dateStr = time.strftime("%b%d_%H%M", time.localtime())  # add the current time
 
@@ -47,30 +47,30 @@ stimHz = [expInfo['stimLeft (Hz)'], expInfo['stimRight (Hz)']]
 
 # Using wavhelpers:
 leftChanStr, rightChanStr = \
-    utilities.load_stimuli(stimHz, audioSamplingRate,
-                           audStimDur_sec, audStimTaper_sec)
+    wavhelpers.load_stimuli(stimHz, audioSamplingRate,
+                            audStimDur_sec, audStimTaper_sec)
 
 if sys.platform == 'win32':
     import winsound
 
     if expInfo['digPort'] == 'U3':
-        dig_port = utilities.U3Port()
-    attenuatorCtrl = utilities.AttenuatorController(dig_port)
+        dig_port = attenuator.U3Port()
+    attenuatorCtrl = attenuator.AttenuatorController(dig_port)
 
     def playSound(wavfile):
         winsound.PlaySound(wavfile,
                            winsound.SND_FILENAME | winsound.SND_NOWAIT)
 
 else:
-    attenuatorPort = utilities.FakeParallelPort()
+    attenuatorPort = attenuator.FakeParallelPort()
 
     from psychopy import sound
     soundLeft = sound.Sound(leftChanStr, autoLog=False)
     soundRight = sound.Sound(rightChanStr, autoLog=False)
 
     attenuatorCtrl = \
-        utilities.FakeAttenuatorController(attenuatorPort,
-                                           soundLeft, soundRight)
+        attenuator.FakeAttenuatorController(attenuatorPort,
+                                            soundLeft, soundRight)
 
     def playSound(wavfile):
         if wavfile == leftChanStr:
