@@ -234,7 +234,7 @@ attenuatorCtrl.setVolume(avgThreshLeft_rounded, side='left')
 attenuatorCtrl.setVolume(avgThreshRight_rounded, side='right')
 
 # make a text file to save data
-fileName = expInfo['subjID'] + '-' + str(expInfo['sesNo']) + '_' + dateStr
+fileName = expInfo['subjID'] + '_' + dateStr
 dataFile = open(fileName+'.log', 'w')
 # dataFile.write('targetSide	oriIncrement	correct\n')
 dataFile.write('Reversal intensities')
