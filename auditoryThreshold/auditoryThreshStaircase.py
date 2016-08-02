@@ -90,7 +90,7 @@ message1 = visual.TextStim(win, pos=[0, +3], text='Ready...')
 message2 = visual.TextStim(win, pos=[0, -3], text='')
 message1.draw()
 win.flip()
-event.waitKeys(keyList=['space', 'enter'])
+event.waitKeys(keyList=['space', 'enter', 'return'])
 
 message1.setText('Hit a key when ready.')
 message2.setText('Then press left button for left sound, '
@@ -234,7 +234,7 @@ attenuatorCtrl.setVolume(avgThreshLeft_rounded, side='left')
 attenuatorCtrl.setVolume(avgThreshRight_rounded, side='right')
 
 # make a text file to save data
-fileName = expInfo['subjID'] + '-' + str(expInfo['sesNo']) + '_' + dateStr
+fileName = expInfo['subjID'] + '_' + dateStr
 dataFile = open(fileName+'.log', 'w')
 # dataFile.write('targetSide	oriIncrement	correct\n')
 dataFile.write('Reversal intensities')
