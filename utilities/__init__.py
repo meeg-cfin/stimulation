@@ -1,4 +1,3 @@
-from .attenuator import (AttenuatorController, FakeAttenuatorController,
-                         FakeParallelPort)
+#from .attenuator import *
 
-from .wavhelpers import (loadWavFromDisk, load_stimuli)
+#from .wavhelpers import (loadWavFromDisk, load_stimuli)

@@ -1,23 +1,42 @@
+from __future__ import print_function
 import numpy as np
 import time
+from labjack import u3
+from psychopy import parallel
 
 
-class FakeParallelPort():
+class U3Port():
     def __init__(self):
-        pass
 
-    def setPortAddress(self, portaddr):
-        pass
+        self.u3dev = u3.U3()
 
-    def setData(self, code=1):
-        pass
+    def setData(self, code=0):
+        self.u3dev.getFeedback(u3.PortStateWrite([0x00, code, 0x00]))
+
+
+class LPTPort():
+    def __init__(self, port_params=None):
+
+        self.lpt_port = parallel
+        self.lpt_port.setPortAddress(port_params['address'])
+
+    def setData(self, code=0):
+        self.lpt_port.setData(code)
+
+
+class FakePort():
+    def __init__(self):
+        self.fake_port = print
+
+    def setData(self, code=0):
+        if code > 0:
+            self.fake_port(code, end=";")
 
 
 class AttenuatorController():
-    def __init__(self, attenuatorPort, portaddr=0xBCD0, startVal=[-20., -20.0]):
+    def __init__(self, digital_port=FakePort(), startVal=[-20., -20.0]):
 
-        self.port = attenuatorPort
-        self.port.setPortAddress(portaddr)
+        self.port = digital_port
         self.volMax = 0.0
         self.volMin = -105.0
 
@@ -38,10 +57,11 @@ class AttenuatorController():
             "Trying to change volume beyond limits (-105 to 0 dB) " + \
             "is not possible!"
 
-    def _sendCode(self, code=4, duration=0.002):
+    def _sendCode(self, code=4, duration=0.001):
         self.port.setData(code)  # Set to code, 4 resets to zero
         time.sleep(duration)
         self.port.setData(0)  # Set to zero
+        time.sleep(duration)
 
     def _changeVolume(self, code, iters):
         # here the code already includes the information on iteration direction
@@ -97,7 +117,7 @@ class AttenuatorController():
 
     def setVolume(self, newVol, side='left'):
         if side == 'both':
-            print "Setting both volumes at same time not support yet..."
+            print("Setting both volumes at same time not support yet...")
             raise ValueError
 
         curVol = self.getCurVolume(side=side)
@@ -106,7 +126,7 @@ class AttenuatorController():
         if changeCode is not None:
             if (curVol + volDiff > self.volMax) or \
                (curVol + volDiff < self.volMin):
-                print self._volumeLimitErrorMsg
+                print(self._volumeLimitErrorMsg)
                 raise ValueError
 
             self._changeVolume(changeCode, nIters)
@@ -117,7 +137,7 @@ class AttenuatorController():
 
     def increaseVolume(self, increment, side='left'):
         if side == 'both':
-            print "Setting both volumes at same time not support yet..."
+            print("Setting both volumes at same time not support yet...")
             raise ValueError
 
         curVol = self.getCurVolume(side=side)
@@ -127,7 +147,7 @@ class AttenuatorController():
         if changeCode is not None:
             if (curVol + volDiff > self.volMax) or \
                (curVol + volDiff < self.volMin):
-                print self._volumeLimitErrorMsg
+                print(self._volumeLimitErrorMsg)
                 raise ValueError
 
             self._changeVolume(changeCode, nIters)
@@ -146,12 +166,12 @@ class AttenuatorController():
             if side == 'left' or side == 'both':
                 if (curVol + volDiff > self._relativeVolMaxLeft) or \
                    (curVol + volDiff < self._relativeVolMinLeft):
-                    print self._volumeLimitErrorMsg
+                    print(self._volumeLimitErrorMsg)
                     raise ValueError
             if side == 'right' or side == 'both':
                 if (curVol + volDiff > self._relativeVolMaxRight) or \
                    (curVol + volDiff < self._relativeVolMinRight):
-                    print self._volumeLimitErrorMsg
+                    print(self._volumeLimitErrorMsg)
                     raise ValueError
 
             self._changeVolume(changeCode, nIters)
