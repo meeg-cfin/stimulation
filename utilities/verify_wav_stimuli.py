@@ -23,7 +23,7 @@ def get_wav(fname):
                          "{:.1f} kHz".format(Fs/1000.0))
     if len(data.shape) == 1:
         data = data[np.newaxis, :]  # make mono files 2D
-    return data, Fs
+    return data
 
 
 def wavlist_to_wavarr(wavlist):
