@@ -81,9 +81,11 @@ from psychopy.tools.filetools import fromFile, toFile
 import time
 import sys
 import numpy as np
-# This is ugly code, revise by making wavhelpers part of a module
-sys.path.insert(0, '../')
-from utilities import attenuator, wavhelpers
+
+# Must add these to path
+sys.path.insert(0, '/Users/cjb/src/git/meeg-cfin/stimulation/utilities')
+from psychopy_utils import attenuator  # noqa
+import wavhelpers  # noqa
 
 targetKeys = dict(left=['1', '2', 'z'], right=['3', '4', 'm'],
                   abort=['q', 'escape'])
@@ -97,15 +99,12 @@ nReversalAverage = 2
 
 curMonitor = 'testMonitor'
 bckColour = '#303030'
-fullScr = True
+fullScr = False
 
-try:  # try to get a previous parameters file
-    expInfo = fromFile('lastParams.pickle')
-except:  # if not there then use a default set
-    expInfo = {'subjID': 'test',
-               'startIntAbv': -30.0, 'startIntBlw': -100.0,
-               'stimLeft (Hz)': 1000, 'stimRight (Hz)': 1000,
-               'relTargetVol': 50., 'digPort': ['U3', 'LPT', 'Fake']}
+expInfo = {'subjID': 'test',
+           'startIntAbv': -30.0, 'startIntBlw': -100.0,
+           'stimLeft (Hz)': 1000, 'stimRight (Hz)': 1000,
+           'relTargetVol': 50., 'digPort': ['U3', 'LPT', 'Fake']}
 
 dateStr = time.strftime("%b%d_%H%M", time.localtime())  # add the current time
 
@@ -113,9 +112,7 @@ dateStr = time.strftime("%b%d_%H%M", time.localtime())  # add the current time
 dlg = gui.DlgFromDict(expInfo, title='Auditory (dual) staircase',
                       order=['subjID', 'stimLeft (Hz)',
                              'stimRight (Hz)', 'relTargetVol', 'digPort'])
-if dlg.OK:
-    toFile('lastParams.pickle', expInfo)  # save params to file for next time
-else:
+if not dlg.OK:
     core.quit()  # the user hit cancel so exit
 
 stimHz = [expInfo['stimLeft (Hz)'], expInfo['stimRight (Hz)']]
@@ -137,7 +134,7 @@ if sys.platform == 'win32':
                            winsound.SND_FILENAME | winsound.SND_NOWAIT)
 
 else:
-    attenuatorPort = attenuator.FakeParallelPort()
+    attenuatorPort = attenuator.FakePort()
 
     from psychopy import sound
     soundLeft = sound.Sound(leftChanStr, autoLog=False)
