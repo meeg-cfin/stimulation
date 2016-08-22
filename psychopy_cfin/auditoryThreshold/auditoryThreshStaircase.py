@@ -81,9 +81,11 @@ from psychopy.tools.filetools import fromFile, toFile
 import time
 import sys
 import numpy as np
-# This is ugly code, revise by making wavhelpers part of a module
-sys.path.insert(0, '../')
-from utilities import attenuator, wavhelpers
+
+# Must add these to path
+sys.path.insert(0, '/Users/cjb/src/git/meeg-cfin/stimulation')
+from psychopy_cfin import attenuator
+from utilities import wavhelpers
 
 targetKeys = dict(left=['1', '2', 'z'], right=['3', '4', 'm'],
                   abort=['q', 'escape'])
@@ -97,7 +99,7 @@ nReversalAverage = 2
 
 curMonitor = 'testMonitor'
 bckColour = '#303030'
-fullScr = True
+fullScr = False
 
 try:  # try to get a previous parameters file
     expInfo = fromFile('lastParams.pickle')
@@ -137,7 +139,7 @@ if sys.platform == 'win32':
                            winsound.SND_FILENAME | winsound.SND_NOWAIT)
 
 else:
-    attenuatorPort = attenuator.FakeParallelPort()
+    attenuatorPort = attenuator.FakePort()
 
     from psychopy import sound
     soundLeft = sound.Sound(leftChanStr, autoLog=False)
