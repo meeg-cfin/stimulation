@@ -1,7 +1,44 @@
 # -*- coding: utf-8 -*-
+"""DOCUMENTATION MISSING! (both at module and method levels)
+"""
+import glob
 import numpy as np
 from scipy.io.wavfile import write as wavwrite
 from scipy.io.wavfile import read as wavread
+from os.path import join as opj
+from os.path import expanduser as ope
+
+
+def list_wavs_in_dir(dirname):
+    return glob.glob(opj(ope(dirname), '*.wav'))
+
+
+def get_wav(fname):
+    Fs, data = wavread(fname)
+    if not data.dtype == np.int16:
+        raise ValueError("'Data in {0:s} is of type {1}, should be "
+                         "'int16'".format(fname, data.dtype))
+    elif Fs != 44100:
+        raise ValueError("Data should be sampled at 44.1 kHz, not "
+                         "{:.1f} kHz".format(Fs/1000.0))
+    if len(data.shape) == 1:
+        data = data[np.newaxis, :]  # make mono files 2D
+    return data
+
+
+def wavlist_to_wavarr(wavlist):
+    wavlens = [wavlist[0].shape[1]]
+    for wavdata in wavlist[1:]:
+        if wavdata.shape[0] != wavlist[0].shape[0]:
+            raise ValueError('Do not mix mono and stereo recordings!')
+        wavlens += [wavdata.shape[1]]
+    wavlens.sort()
+    max_wavlen = wavlens[-1]
+    for ii in range(len(wavlist)):
+        wavlist[ii] = np.c_[wavlist[ii],
+                            np.array([0]*(max_wavlen - wavlist[ii].shape[1]),
+                            ndmin=2, dtype=np.int16)]
+    return np.array(wavlist)
 
 
 def loadWavFromDisk(Hz=[800, 1500]):

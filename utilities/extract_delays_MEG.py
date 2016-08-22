@@ -1,8 +1,6 @@
 from mne import find_events, pick_channels, pick_events, Epochs
 from mne.io import Raw
-
 import numpy as np
-from stormdb.access import Query
 
 
 def _next_crossing(a, offlevel, onlimit):
@@ -103,6 +101,7 @@ def extract_delays(raw_fname, stim_chan='STI101', misc_chan='MISC001',
     return(delays, stats)
 
 if __name__ == '__main__':
+    from stormdb.access import Query
     proj_name = 'MEG_service'
     subj_id = '0032'
     qy = Query(proj_name)
