@@ -82,10 +82,12 @@ import time
 import sys
 import numpy as np
 
-# Must add these to path
-sys.path.insert(0, '/Users/cjb/src/git/meeg-cfin/stimulation/utilities')
-from psychopy_utils import attenuator  # noqa
-import wavhelpers  # noqa
+# These will only work if meeg-python is present and added to
+# Preferences -> General -> Paths = ['/path/to/meeg-python/']
+# See https://github.com/meeg-cfin/meeg-python
+from meeg import wavhelpers  # noqa
+from meeg.psychopy_utils import (AttenuatorController, FakeAttenuatorController,
+                                 U3Port, LPTPort, FakePort)  # noqa
 
 targetKeys = dict(left=['1', '2', 'z'], right=['3', '4', 'm'],
                   abort=['q', 'escape'])
@@ -126,23 +128,28 @@ if sys.platform == 'win32':
     import winsound
 
     if expInfo['digPort'] == 'U3':
-        dig_port = attenuator.U3Port()
-    attenuatorCtrl = attenuator.AttenuatorController(dig_port)
+        dig_port = U3Port()
+    elif expInfo['digPort'] == 'LPT':
+        dig_port = LPTPort()
+    elif expInfo['digPort'] == 'Fake':
+        dig_port = FakePort()
+
+    attenuatorCtrl = AttenuatorController(dig_port)
 
     def playSound(wavfile):
         winsound.PlaySound(wavfile,
                            winsound.SND_FILENAME | winsound.SND_NOWAIT)
 
 else:
-    attenuatorPort = attenuator.FakePort()
+    attenuatorPort = FakePort()
 
     from psychopy import sound
     soundLeft = sound.Sound(leftChanStr, autoLog=False)
     soundRight = sound.Sound(rightChanStr, autoLog=False)
 
     attenuatorCtrl = \
-        attenuator.FakeAttenuatorController(attenuatorPort,
-                                            soundLeft, soundRight)
+        FakeAttenuatorController(attenuatorPort,
+                                 soundLeft, soundRight)
 
     def playSound(wavfile):
         if wavfile == leftChanStr:
