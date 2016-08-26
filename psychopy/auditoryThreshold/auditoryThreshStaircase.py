@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """Measure the Just Noticeable Difference from silence of an auditory stimulus.
 
-This can also be considered the subject's perceptual threshold for the stimuli
-used. The script is based on a dual-staircasing procedure in which the
+This can also be considered the subject's perceptual hearing threshold.
+The script is based on a dual-staircasing procedure in which the
 threshold is approached both from above and below (separately for each ear).
 
 Usage
 -----
 Give the subject a response pad(s), and tell them to press a button with their
 left hand when they hear a sound in the left ear, and to press a button with
-their right hand when they hear a sound in the right ear.
+their right hand when they hear a sound in the right ear. Button presses
+['1', '2', 'b', 'y', 'z'] refer to left, ['3', '4', 'r', 'g', 'm'] to right.
 
 Principle of operation
 ----------------------
@@ -47,7 +48,9 @@ stimLeft (Hz) : float
 stimRight (Hz) : float
     Stimulus frequency in Hz; right ear
 digPort : 'U3' 'LPT' or 'Fake'
-    How is the attenuatro connected to the computer? Ask the MEG admin.
+    How is the attenuator connected to the computer? Ask the MEG admin.
+    'Fake' can be used for testing: the sounds will be attenuated
+    by the programme itself.
 startIntAbv : float
     Assume the threshold is below this value, use this as the highest value
     for the staircases approaching the threshold from above.
@@ -86,10 +89,9 @@ import numpy as np
 # Preferences -> General -> Paths = ['/path/to/meeg-python/']
 # See https://github.com/meeg-cfin/meeg-python
 from meeg import wavhelpers  # noqa
-from meeg.psychopy_utils import (AttenuatorController, FakeAttenuatorController,
-                                 U3Port, LPTPort, FakePort)  # noqa
 
-targetKeys = dict(left=['1', '2', 'z'], right=['3', '4', 'm'],
+targetKeys = dict(left=['1', '2', 'b', 'y', 'z'],
+                  right=['3', '4', 'r', 'g', 'm'],
                   abort=['q', 'escape'])
 
 audioSamplingRate = 44100.
@@ -125,15 +127,19 @@ leftChanStr, rightChanStr = \
                             audStimDur_sec, audStimTaper_sec)
 
 if sys.platform == 'win32':
-    import winsound
+    import winsound  # noqa
 
     if expInfo['digPort'] == 'U3':
+        from meeg.psychopy.attenuator import U3Port  # noqa
         dig_port = U3Port()
     elif expInfo['digPort'] == 'LPT':
+        from meeg.psychopy.attenuator import LPTPort  # noqa
         dig_port = LPTPort()
     elif expInfo['digPort'] == 'Fake':
+        from meeg.psychopy.attenuator import FakePort  # noqa
         dig_port = FakePort()
 
+    from meeg.psychopy.attenuator import AttenuatorController  # noqa
     attenuatorCtrl = AttenuatorController(dig_port)
 
     def playSound(wavfile):
@@ -141,6 +147,7 @@ if sys.platform == 'win32':
                            winsound.SND_FILENAME | winsound.SND_NOWAIT)
 
 else:
+    from meeg.psychopy.attenuator import (FakeAttenuatorController, FakePort)  # noqa
     attenuatorPort = FakePort()
 
     from psychopy import sound
