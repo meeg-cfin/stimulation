@@ -100,6 +100,7 @@ audStimTaper_sec = 0.005
 minISI = 0.75
 maxISI = 1.25
 nReversalAverage = 2
+DEBUG = False
 
 curMonitor = 'testMonitor'
 bckColour = '#303030'
@@ -251,6 +252,10 @@ while runStaircases:
         if thisVolume:
             attenuatorCtrl.setVolume(thisVolume, side=curSide)
             playSound(curChanStr)
+            if DEBUG:
+                print('Current volume: [{:.1f}, {:.1f}]'
+                       'dB'.format(attenuatorCtrl.curVolLeft,
+                                   attenuatorCtrl.curVolRight))
 
         # get response
         thisResp = None
