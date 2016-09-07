@@ -44,9 +44,9 @@ def trigger_u3(code=1, trigDuration=0.010):
 #    u3dev.toggleLED()
 
 ###### Window and stimulus definitions
-bckColour = '#303030'
+bckColour = '#000000'
 monitor = 'testMonitor'
-frameRate  = 60.0
+frameRate  = 120.0
 stimSize = 8.
 stimCycPerDeg = 1.
 angCycles = 0.
@@ -58,9 +58,9 @@ radialPhaseAdvanceBaseline = stimBaseSpeed/frameRate
 win = visual.Window(monitor=monitor, units ='deg', fullscr=False, color=bckColour)
 rad_stim = visual.RadialStim(win, size = stimSize, units = "deg", tex='sinXsin',
                              radialCycles=stimCycles, angularCycles=angCycles, 
-                             mask='radRamp', autoLog=False)
+                             mask=None, autoLog=False)
 
-frameSyncSpot = visual.GratingStim(win,tex=None, mask="gauss", 
+frameSyncSpot = visual.GratingStim(win,tex=None, mask=None, 
                                    size=(1.,1.),color='white', 
                                    units='deg', pos=(0,0), autoLog=False)
                          
