@@ -1,4 +1,4 @@
-name: psypy320
+name: psypy
 channels:
 - defaults
 dependencies:
