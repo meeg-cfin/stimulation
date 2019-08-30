@@ -1,0 +1,43 @@
+name: psypy320
+channels:
+- defaults
+dependencies:
+- python=3.6
+- pip
+- numpy
+- scipy
+- matplotlib
+- pandas
+- pyopengl
+- pillow
+- lxml
+- openpyxl
+- xlrd
+- configobj
+- pyyaml
+- gevent
+- greenlet
+- msgpack-python
+- psutil
+- pytables
+- requests[security]
+- cffi
+- seaborn
+- wxpython
+- cython
+- pyzmq
+- pyserial
+- conda-forge:pyglet
+- conda-forge:python-bidi
+- conda-forge:moviepy
+- conda-forge:pyosf
+- pip:
+  - zmq
+  - json-tricks
+  - pysoundfile
+  - pyparallel
+  - sounddevice
+  - pygame
+  - pysoundcard
+  - psychopy_ext
+  - psychopy
