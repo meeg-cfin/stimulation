@@ -14,4 +14,15 @@ on your OS, then opening a Terminal/Command prompt and running
 conda env create -f environment-Win10.env
 ```
 
-PsychoPy-scripts using/demonstrating various features.
+This will create an environment called `psypy` with the latest version
+from PyPi. Edit the first line of the file if you want to name the
+environment otherwise. Run
+
+```bash
+conda activate psypy
+psychopy
+```
+
+to start the GUI.
+
+### PsychoPy-scripts using/demonstrating various features.
