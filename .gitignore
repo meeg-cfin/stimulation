@@ -1,7 +1,7 @@
 .DS_*
 *.pyc
 *.log
-*.wav
 *.pickle
 
 .ipynb_checkpoints*
+.vscode*
