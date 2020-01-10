@@ -68,7 +68,9 @@ while bContinue:
     DPxUpdateRegCache()
 
     DPxStartDoutSched()
-    win.callOnFlip(DPxUpdateRegCache)
+    # win.callOnFlip(DPxUpdateRegCache)
+    win.callOnFlip(DPxUpdateRegCacheAfterVideoSync)
+    # try adding more of these, do we get one extra frame each? (blocking)
 
     for cc in range(curCode):
         stimArea.draw()
