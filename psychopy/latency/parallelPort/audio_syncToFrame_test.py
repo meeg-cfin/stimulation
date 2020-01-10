@@ -34,10 +34,14 @@ cycle_frames = 50
 dur_epsilon = 3.33e-3  # 3.33 ms shorter than requested!
 dur_secs = dur_frames / frameRate - dur_epsilon
 
+# For testing laterality
+# beep = sound.Sound(r"parallelPort\stimuli\rightChan-1000Hz.wav", blockSize=128,
+#                    volume=1.0, stereo=True)
+
 beep = sound.Sound(200, secs=dur_secs, octave=5, syncToWin=syncToWin, blockSize=128,
                    volume=0.51, stereo=True, sampleRate=48e3)
-boop = sound.Sound(100, secs=dur_secs, octave=4, syncToWin=syncToWin, blockSize=128,
-                   volume=0.51, stereo=True, sampleRate=48e3)
+# boop = sound.Sound(100, secs=dur_secs, octave=4, syncToWin=syncToWin, blockSize=128,
+#                    volume=0.51, stereo=True, sampleRate=48e3)
 #####################
 # Create global event keys
 event.globalKeys.add('escape', func=core.quit, modifiers=['shift'])
