@@ -1,7 +1,7 @@
 from pypixxlib._libdpx import DPxUpdateRegCacheAfterVideoSync
 from pypixxlib._libdpx import DPxSelectDevice, DPxSetDoutValue
 from pypixxlib._libdpx import DPxStopDoutSched, DPxUpdateRegCache
-
+from pypixxlib._libdpx import DPxStopAudSched, DPxStopAuxSched
 
 def dpx_trig_val(code):
     '''Temporary fix for DOUT pins 0-7 not corresponding to LPT layout
@@ -22,6 +22,8 @@ def send_dpx_trig(myCtrl, code=0, bitmask=0xFFFFFF):
 def clean_quit(core):
     DPxSelectDevice('PROPixx Ctrl')
     DPxStopDoutSched()
+    DPxStopAudSched()  # left channel is AUD
+    DPxStopAuxSched()  # right channel is AUX!
     DPxSetDoutValue(0, 0xFFFFFF)
     DPxUpdateRegCache()
     core.quit()
