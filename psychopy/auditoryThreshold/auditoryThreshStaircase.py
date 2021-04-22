@@ -10,7 +10,7 @@ Usage
 Give the subject a response pad(s), and tell them to press a button with their
 left hand when they hear a sound in the left ear, and to press a button with
 their right hand when they hear a sound in the right ear. Button presses
-['1', '2', 'b', 'y', 'z'] refer to left, ['3', '4', 'r', 'g', 'm'] to right.
+['1', '2', 'b', 'y', 'z'] refer to right, ['3', '4', 'r', 'g', 'm'] to left.
 
 Principle of operation
 ----------------------
@@ -47,6 +47,10 @@ stimLeft (Hz) : float
     Stimulus frequency in Hz; left ear
 stimRight (Hz) : float
     Stimulus frequency in Hz; right ear
+minISI : float
+    Minimum stimulus ISI; default = 0.75
+maxISI : float
+    Maximum stimulus ISI; default = 1.25    
 digPort : 'U3' 'LPT' or 'Fake'
     How is the attenuator connected to the computer? Ask the MEG admin.
     'Fake' can be used for testing: the sounds will be attenuated
@@ -71,10 +75,6 @@ audStimDur_sec : float
     default = 0.050
 audStimTaper_sec : float
     default = 0.005
-minISI : float
-    default = 0.75
-maxISI : float
-    default = 1.25
 nReversalAverage : int
     Based on how many reversals to calculate the average threshold; default = 2
 
@@ -85,38 +85,35 @@ import time
 import sys
 import numpy as np
 
-# These will only work if meeg-python is present and added to
-# Preferences -> General -> Paths = ['/path/to/meeg-python/']
-# See https://github.com/meeg-cfin/meeg-python
-from meeg import wavhelpers  # noqa
+import wavhelpers  # noqa
 
-targetKeys = dict(left=['1', '2', 'b', 'y', 'z'],
-                  right=['3', '4', 'r', 'g', 'm'],
+targetKeys = dict(left=['3', '4', 'r', 'g', 'm'],
+                  right=['1', '2', 'b', 'y', 'z'],
                   abort=['q', 'escape'])
 
 audioSamplingRate = 44100.
 audStimDur_sec = 0.050
 audStimTaper_sec = 0.005
-minISI = 0.75
-maxISI = 1.25
 nReversalAverage = 2
 DEBUG = False
 
 curMonitor = 'testMonitor'
-bckColour = '#303030'
+bckColour = -0.4
 fullScr = False
 
 expInfo = {'subjID': 'test',
            'startIntAbv': -30.0, 'startIntBlw': -100.0,
            'stimLeft (Hz)': 1000, 'stimRight (Hz)': 1000,
-           'relTargetVol': 50., 'digPort': ['U3', 'LPT', 'Fake']}
+           'relTargetVol': 50., 'digPort': ['U3', 'LPT', 'Fake'],
+           'minISI': 0.75, 'maxISI': 1.25}
 
 dateStr = time.strftime("%b%d_%H%M", time.localtime())  # add the current time
 
 # present a dialogue to change params
 dlg = gui.DlgFromDict(expInfo, title='Auditory (dual) staircase',
                       order=['subjID', 'stimLeft (Hz)',
-                             'stimRight (Hz)', 'relTargetVol', 'digPort'])
+                             'stimRight (Hz)', 'minISI', 'maxISI',
+                             'relTargetVol', 'digPort'])
 if not dlg.OK:
     core.quit()  # the user hit cancel so exit
 
@@ -131,16 +128,16 @@ if sys.platform == 'win32':
     import winsound  # noqa
 
     if expInfo['digPort'] == 'U3':
-        from meeg.psychopy.attenuator import U3Port  # noqa
+        from attenuator import U3Port  # noqa
         dig_port = U3Port()
     elif expInfo['digPort'] == 'LPT':
-        from meeg.psychopy.attenuator import LPTPort  # noqa
+        from attenuator import LPTPort  # noqa
         dig_port = LPTPort()
     elif expInfo['digPort'] == 'Fake':
-        from meeg.psychopy.attenuator import FakePort  # noqa
+        from attenuator import FakePort  # noqa
         dig_port = FakePort()
 
-    from meeg.psychopy.attenuator import AttenuatorController  # noqa
+    from attenuator import AttenuatorController  # noqa
     attenuatorCtrl = AttenuatorController(dig_port)
 
     def playSound(wavfile):
@@ -148,7 +145,7 @@ if sys.platform == 'win32':
                            winsound.SND_FILENAME | winsound.SND_NOWAIT)
 
 else:
-    from meeg.psychopy.attenuator import (FakeAttenuatorController, FakePort)  # noqa
+    from attenuator import (FakeAttenuatorController, FakePort)  # noqa
     attenuatorPort = FakePort()
 
     from psychopy import sound
@@ -260,7 +257,8 @@ while runStaircases:
         # get response
         thisResp = None
         # max wait 0.75-1.25 secs!
-        trialClock.reset(minISI + (maxISI - minISI)*np.random.random())
+        trialClock.reset(expInfo['minISI'] + (expInfo['maxISI'] - expInfo['minISI']) \
+                            * np.random.random())
         allKeys = event.waitKeys(maxWait=1.)
         if not allKeys or len(allKeys) < 1:  # no response given in 1 secs
             thisResp = 0
@@ -271,7 +269,7 @@ while runStaircases:
                     thisResp = 1  # correct
                 elif (thisKey in targetKeys['right'] and targetSide == -1) or \
                      (thisKey in targetKeys['left'] and targetSide == 1):
-                    thisResp = 0  # incorrect
+                    thisResp = 1  # also correct
                 elif thisKey in targetKeys['abort']:
                     win.close()
                     core.quit()  # abort experiment
@@ -282,14 +280,14 @@ while runStaircases:
         if targetSide < 0:  # left
             if targetDir > 0 and not leftDone:
                 leftDone = True
-                print "Left above done", staircaseLeft.reversalIntensities
+                print("Left above done", staircaseLeft.reversalIntensities)
             elif targetDir < 0 and not leftDone_below:
                 leftDone_below = True
-                print "Left below done", staircaseLeft_below.reversalIntensities
+                print("Left below done", staircaseLeft_below.reversalIntensities)
         elif targetSide > 0:  # right
             if targetDir > 0 and not rightDone:
                 rightDone = True
-                print "Right above done", staircaseRight.reversalIntensities
+                print("Right above done", staircaseRight.reversalIntensities)
             elif targetDir < 0 and not rightDone_below:
                 rightDone_below = True
                 print("Right below done",
@@ -302,7 +300,7 @@ while runStaircases:
         core.wait(0.010)  # adds some uncertainty too...
 
 
-print "Total time: %.2f seconds" % (globalClock.getTime())
+print("Total time: %.2f seconds" % (globalClock.getTime()))
 
 avgThreshLeft = np.average(np.r_[(
     staircaseLeft.reversalIntensities[-nReversalAverage:],
@@ -318,8 +316,8 @@ avgThreshLeft_rounded = avgThreshLeft - \
 avgThreshRight_rounded = avgThreshRight - \
                         (np.remainder(10.0*avgThreshRight, 5))/10.
 
-print "Left threshold: %.1f" % (avgThreshLeft_rounded)
-print "Right threshold: %.1f" % (avgThreshRight_rounded)
+print("Left threshold: %.1f" % (avgThreshLeft_rounded))
+print("Right threshold: %.1f" % (avgThreshRight_rounded))
 
 attenuatorCtrl.setVolume(avgThreshLeft_rounded, side='left')
 attenuatorCtrl.setVolume(avgThreshRight_rounded, side='right')
@@ -347,21 +345,36 @@ dataFile.write('%.1f ' % avgThreshLeft_rounded)
 dataFile.write('%.1f ' % avgThreshRight_rounded)
 dataFile.close()
 
+
+#event.waitKeys(keyList=['space', 'enter','return'])
+
 message1.setText('Thanks!')
-message2.setText('Your thresholds are:\n%.1f / %.1f (L/R)' %
+message2.setText('Your thresholds are:\n%.1f / %.1f (L/R) \n Hit space or enter' %
                  (avgThreshLeft_rounded, avgThreshRight_rounded))
 message1.draw()
 message2.draw()
 win.flip()
+#event.waitKeys()
+
+
+event.waitKeys(keyList=['space', 'enter','return'])
+
+message1.setText('Hit the LOCK-button on the attenuator & Ramp (manual) '
+      "up to +%.0f dB" % (expInfo['relTargetVol']))
+message2.setText('Then hit space or enter')
+message1.draw()
+message2.draw()
+win.flip()
+event.waitKeys()
 
 # Here would be nice to be able to have a lock-command!
-print("Hit the LOCK-button on the attenuator & Ramp (manual) "
-      "up to +%.0f dB" % (expInfo['relTargetVol']))
+#print("Hit the LOCK-button on the attenuator & Ramp (manual) "
+#      "up to +%.0f dB" % (expInfo['relTargetVol']))
 
 # print "Ramping up to desired level..."
-print("Then hit space or enter here...")
+#print("Then hit space or enter here...")
 
-event.waitKeys(keyList=['space', 'enter'])
+#event.waitKeys(keyList=['space', 'enter','return'])
 
 message1.setText('You will now hear 5 tones in each ear')
 message2.setText('Please confirm that the volume is OK\n'
