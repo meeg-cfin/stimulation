@@ -15,7 +15,6 @@ from psychopy import core
 from dpx_triggers import send_dpx_trig, dpx_trig_val, clean_quit
 from os.path import join, dirname
 from scipy.io import wavfile
-from dpx_triggers import send_dpx_trig, dpx_trig_val, clean_quit
 from psychopy import visual
 from numpy.random import random
 

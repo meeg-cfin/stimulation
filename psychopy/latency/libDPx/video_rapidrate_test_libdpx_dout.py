@@ -16,7 +16,7 @@ from dpx_triggers import send_dpx_trig, dpx_trig_val, clean_quit
 myCtrl = PROPixxCTRL()
 
 myDevice = PROPixx()
-refreshRateHZ = 'RGB'  # 120 HZ
+refreshRateHZ = 'RGB 120Hz'  # 120 HZ
         # Args:
         #     program (string) : Any of the following predefined constants.\n
         #         - **RGB**: Default RGB
